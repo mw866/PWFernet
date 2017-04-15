@@ -18,4 +18,7 @@ HMAC|32|[-32:]
     * https://docs.python.org/2.7/library/struct.html#struct.pack
     * http://stackoverflow.com/questions/14043886/python-2-3-convert-integer-to-bytes-cleanly
 
-* Standard Fernet Implementation: https://cryptography.io/en/latest/_modules/cryptography/fernet/#Fernet
+* pyca's Fernet Implementation: https://github.com/pyca/cryptography/blob/master/src/cryptography/fernet.py
+* pyca's Fernet Test: https://github.com/pyca/cryptography/blob/master/tests/test_fernet.py
+
+* Python Unit testing by Katy Huff: http://katyhuff.github.io/python-testing/05-pytest.html

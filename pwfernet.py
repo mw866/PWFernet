@@ -24,7 +24,11 @@ class InvalidToken(Exception):
 
 class PWFernet:
     def __init__(self, pw):
-        self.password = pw
+        if isinstance(pw, bytes) and pw:
+            self.password = pw
+        else:
+            raise ValueError
+
         self.backend = MultiBackend([scrypt_backend.NewScryptBackend(), default_backend()])
         self.scryptsizes = {
             b'\x00': Sizes.small,
@@ -35,6 +39,10 @@ class PWFernet:
 
 
     def encrypt(self, message):
+
+        # ensure the message is plaintext
+        if not isinstance(message, bytes):
+            raise TypeError("data must be bytes.")
 
         # generate Version, 8 bits
         version_field = b'\x90'
@@ -101,7 +109,6 @@ class PWFernet:
         except struct.error:
             raise InvalidToken
 
-
         # If the user has specified a maximum age (or "time-to-live") for the ciphertext,
         # ensure the recorded timestamp is not too far in the past.
         current_time = int(time.time())
@@ -132,7 +139,7 @@ class PWFernet:
         # the encryption key is the first 32 bytes of the Scrypt output
         encryption_key = key[:32]
 
-        #  the authentication key is the second 32 bytes.
+        # the authentication key is the second 32 bytes.
         authentication_key = key[32:]
 
         # Recompute the HMAC from the other fields and the derived authentication key.
@@ -151,28 +158,14 @@ class PWFernet:
         # Decrypt the ciphertext field using AES 256 in CTR mode with the fixed all-zeros IV and derived encryption-key.
         # Output the decrypted message.
         iv = b'0' * 16
-        ciphertext = token[26:-32]
+        ciphertext_field = token[26:-32]
         decryptor = ciphers.Cipher(
             ciphers.algorithms.AES(encryption_key), ciphers.modes.CTR(iv), self.backend
         ).decryptor()
-        message = decryptor.update(ciphertext)
+        message = decryptor.update(ciphertext_field)
         try:
             message += decryptor.finalize()
         except ValueError:
             raise InvalidToken
 
         return message
-
-
-if __name__ == '__main__':
-    # TODO
-
-    password = b"password"
-    f = PWFernet(password)
-
-    original_message = b"Secret message!"
-    token = f.encrypt(original_message)
-    print("encrypt: ", len(original_message), token)
-
-    decrypted_message = f.decrypt(token)
-    print("derypt: ", len(decrypted_message), decrypted_message)
