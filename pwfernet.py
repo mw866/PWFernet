@@ -84,6 +84,7 @@ class PWFernet:
         # assemble token
         encoded_token = base64.urlsafe_b64encode(basic_parts + hmac_field)
 
+        print(encoded_token)
         return encoded_token
 
     def decrypt(self, encoded_token, ttl=None):
