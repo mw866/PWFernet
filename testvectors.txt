@@ -1,0 +1,8 @@
+# most dict will fail and not give any result
+test_vectors = [
+    dict(password=b'password', salt=b'salt', size='small', timestamp=1490650404, message=b'a great secret message', result='6d1bb878eee9ce4a7b77d7a44103574d4cbfe3c15ae3940f0ffe75cd5e1e0afa'),
+    dict(password=None, salt = None, size= 'medium ', timestamp=1490650404, message=b'a great secret message', result = ''),
+    dict(password=b'', salt=b'', size='large', timestamp=1490650404, message=b'a great secret message', result=''),
+    dict(password='', salt='', size='xlarge', timestamp=1490650404, message=b'a great secret message', result=''),
+    dict(password=u'', salt=u'', size=None, timestamp=1490650404, message=b'a great secret message',result='')
+]

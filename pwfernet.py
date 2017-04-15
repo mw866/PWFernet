@@ -1,9 +1,12 @@
+from __future__ import absolute_import, division, print_function
+
 import scrypt_backend
 import base64, os, time, struct, binascii, six
 from cryptography.hazmat.primitives import ciphers, hashes, hmac
 from cryptography.hazmat.backends import default_backend, MultiBackend
 from cryptography.exceptions import InvalidSignature
-
+import base64, calendar, time, iso8601
+import pytest
 
 _MAX_CLOCK_SKEW = 60
 
@@ -170,3 +173,56 @@ class PWFernet:
             raise InvalidToken
 
         return message
+
+
+
+class TestPWFernet(object):
+
+    @pytest.mark.parametrize('password', [b'', '', None])
+    def test_initialize_with_bad_key(self, password):
+        with pytest.raises(ValueError):
+            PWFernet(password)
+
+    def test_roundtrip(self):
+        password = b'password'
+        f = PWFernet(password)
+        original_message = b'Secret message!'
+        assert original_message == f.decrypt(f.encrypt(original_message))
+
+    def test_decrypt_invalid_start_byte(self):
+        f = PWFernet(b'\x00' * 32)
+        with pytest.raises(InvalidToken):
+            f.decrypt(base64.urlsafe_b64encode(b'\x91'))
+
+    def test_decrypt_timestamp_too_short(self):
+        f = PWFernet(b'\x00' * 32)
+        with pytest.raises(InvalidToken):
+            f.decrypt(base64.urlsafe_b64encode(b'\x90abc'))
+
+    @pytest.mark.parametrize('token', [b'\x90abc'])
+    def test_decrypt_non_base64_token(self, token):
+        f = PWFernet(b'\x00' * 32)
+        with pytest.raises(InvalidToken):
+            f.decrypt(token)
+
+    @pytest.mark.parametrize('token', [u''])
+    def test_decrypt_unicode(self, token):
+        f = PWFernet(base64.urlsafe_b64encode(b'\x00' * 32))
+        with pytest.raises(TypeError):
+            f.decrypt(token)
+
+    @pytest.mark.parametrize('message', [u''])
+    def test_encrypt_unicode(self, message):
+        f = PWFernet(base64.urlsafe_b64encode(b'\x00' * 32))
+        with pytest.raises(TypeError):
+            f.encrypt(message)
+
+
+    @pytest.mark.parametrize('timestamp', ['1985-10-26T01:20:01-07:00', '2020-11-27T00:00:00-07:00'])
+    def test_timestamp_ignored_no_ttl(self, timestamp, monkeypatch):
+        f = PWFernet(base64.urlsafe_b64encode(b'\x00' * 32))
+        pt = b'encrypt me'
+        token = f.encrypt(pt)
+        current_time = calendar.timegm(iso8601.parse_date(timestamp).utctimetuple())
+        monkeypatch.setattr(time, 'time', lambda: current_time)
+        assert f.decrypt(token, ttl=None) == pt

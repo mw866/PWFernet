@@ -20,5 +20,4 @@ HMAC|32|[-32:]
 
 * pyca's Fernet Implementation: https://github.com/pyca/cryptography/blob/master/src/cryptography/fernet.py
 * pyca's Fernet Test: https://github.com/pyca/cryptography/blob/master/tests/test_fernet.py
-
 * Python Unit testing by Katy Huff: http://katyhuff.github.io/python-testing/05-pytest.html
