@@ -161,7 +161,7 @@ class PWFernet:
 
         # Decrypt the ciphertext field using AES 256 in CTR mode with the fixed all-zeros IV and derived encryption-key.
         # Output the decrypted message.
-        iv = b'0' * 16
+        iv = b'\x00' * 16
         ciphertext_field = token[26:-32]
         decryptor = ciphers.Cipher(
             ciphers.algorithms.AES(encryption_key), ciphers.modes.CTR(iv), self.backend
