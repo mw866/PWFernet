@@ -2,9 +2,8 @@
 
 PWFernet takes a user-provided message (an arbitrary sequence of bytes) and a password and produces a ciphertext, which contains the message in a form that can not be read or altered without the key. A timestamp can be used as an optional argument to encryption. If a timestamp is not provided, the implementation will generate one using its system clock.
 
-## Usage
+## Instruction
 
-* Install dependency: `pip install cryptography pytest`
 * Unit test: `pytest pwfernet.py`
 
 ## Token Format
